@@ -286,8 +286,8 @@ void JugarCarta( char* Player, char* card, char* ultimaCard){
   chdir("..");
 }
 
-void Turno(char* Jugador){ //READY
-  int i, jugables=0, decision=0, flag=0;
+int Turno(char* Jugador){ //READY
+  int i=0, jugables=0, decision=0, flag=0;
   char *aux, *aux1, *aux2;
   char lastcard[100], mano[100], lastmano[100];
   aux=ObtenerCarta(0,"LastCard");
@@ -311,6 +311,7 @@ void Turno(char* Jugador){ //READY
     repartidas++;
     aux=ObtenerCarta(0,"LastCard");
     printf("El tope es: %s\n", aux);
+    return 1;
   }
   else {
     printf("Posees %d cartas jugables\n", jugables);
@@ -322,6 +323,10 @@ void Turno(char* Jugador){ //READY
         printf("Carta valida\n");
         flag=1;
         JugarCarta(Jugador, aux1, lastcard);
+        if((i-1)==1){
+          printf("UNO!!\n");
+        }
+        if((i-1)==0) return 0;
         aux=ObtenerCarta(0,"LastCard");
         printf("El tope es: %s\n", aux);
       }
@@ -329,6 +334,7 @@ void Turno(char* Jugador){ //READY
         printf("Carta invalida elegir otra\n");
       }
     }
+    return 1;
   }
 }
 
@@ -336,10 +342,12 @@ void Turno(char* Jugador){ //READY
 
 
 int main(){
+  int turn=1;
   CrearCarpetas();
   CrearMazo("./Mazo");
   Repartir();
-  Turno("Jugador1");
-
+  while(turn==1){
+    turn=Turno("Jugador1");
+}
 
 }
