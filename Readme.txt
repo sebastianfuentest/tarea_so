@@ -12,8 +12,8 @@ Informacion del primer avance:
 Información del segundo avance:
   -En este avance nos enfocamos en desarrollar la jugabilidad que tendra cada jugador,
   pero no el juego completo ya que para eso requeriremos usar forks y pipes.
-  -Por el momento existe 1 solo turno para Jugador1, dado que a futuro esto se tendra
-  que ir repitiendo, pero para eso requeriremos los turnos del resto que se haran con
+  -Por el momento existen solo turnos para Jugador1, dado que a futuro esto se tendra
+  que ir cambiando segun el proceso, pero para eso requeriremos los turnos del resto que se haran con
   los fork. Por lo que hacer que todos jueguen en este avance hubiera sido trabajo que
   a posterior borrariamos.
   -Tambien arreglamos errores previos como entregar 1 carta demás al repartir.
