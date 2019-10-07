@@ -7,6 +7,73 @@
 #include <dirent.h>
 #include <time.h>
 
+int repartidas=0;
+
+int GetNumber (char* carta) { //READY
+   char str[20];
+   const char s[2] = " ";
+   char *token;
+   strcpy(str, carta);
+   token = strtok(str, s);
+   if (strcmp(token, "0")==0) return 0;
+   if (strcmp(token, "1")==0) return 1;
+   if (strcmp(token, "2")==0) return 2;
+   if (strcmp(token, "3")==0) return 3;
+   if (strcmp(token, "4")==0) return 4;
+   if (strcmp(token, "5")==0) return 5;
+   if (strcmp(token, "6")==0) return 6;
+   if (strcmp(token, "7")==0) return 7;
+   if (strcmp(token, "8")==0) return 8;
+   if (strcmp(token, "9")==0) return 9;
+   if (strcmp(token, "+2")==0) return 10;
+   if (strcmp(token, "Reversa")==0) return 11;
+   if (strcmp(token, "Salto")==0) return 12;
+   if (strcmp(token, "+4")==0) return 13;
+   if (strcmp(token, "CartaColor")==0) return 13;
+   return 69;                                                        //Carta Invalida
+}
+
+int GetColor(char* carta){ //READY
+  char str[20];
+  const char s[2] = " ";
+  char *token;
+  strcpy(str, carta);
+  token = strtok(str, s);
+  token = strtok(NULL, s);
+  if (strcmp(token, "Rojo.txt")==0) return 0;
+  if (strcmp(token, "Azul.txt")==0) return 1;
+  if (strcmp(token, "Verde.txt")==0) return 2;
+  if (strcmp(token, "Amarillo.txt")==0) return 3;
+  if (strcmp(token, "Negro.txt")==0) return 4;
+  if (strcmp(token, "Rojo")==0) return 0;
+  if (strcmp(token, "Azul")==0) return 1;
+  if (strcmp(token, "Verde")==0) return 2;
+  if (strcmp(token, "Amarillo")==0) return 3;
+  if (strcmp(token, "Negro")==0) return 4;
+
+  return 69;                                                   //Color invalido
+}
+
+int Jugable(char* carta, char* lastcard){//READy
+  int numCarta, colorCarta;
+  int numLast, colorLast;
+
+  numCarta=GetNumber(carta);
+  colorCarta=GetColor(carta);
+  numLast=GetNumber(lastcard);
+  colorLast=GetColor(lastcard);
+
+  //printf("NumCarta %i y NumLast %i\n", numCarta, numLast);
+  //printf("colorCarta %i y colorLast %i\n", colorCarta, colorLast);
+
+  if(numCarta==numLast) return 0;
+  if(colorCarta==colorLast) return 0;
+  if(colorCarta==4) return 0;
+  if(numCarta==13) return 0;
+  if(colorLast==4) return 0;
+  if(numLast==13) return 0;
+  return 1;
+}
 
 void CrearMazo(char *dir){//READY
   FILE* fp;
@@ -78,28 +145,32 @@ void CrearCarpetas(){//READY
   mkdir("./Jugador2", 0777);
   mkdir("./Jugador3", 0777);
   mkdir("./Jugador4", 0777);
+  mkdir("./LastCard", 0777);
 }
 
-char * ObtenerCarta(int n){ //READY
+char * ObtenerCarta(int n, char* Carpeta){ //READY
   DIR *directorio;
   int i = 0;
   static char carta[30];
   struct dirent *file;
-  directorio = opendir("Mazo");                                     //Abro la carpeta Mazo
+  directorio = opendir(Carpeta);                                     //Abro la carpeta Mazo
   if (directorio){                                                 //Verifico que exista Mazo
       while ((file = readdir(directorio)) != NULL){                //Recorro los archivos de la carpeta hasta que termine
         if (file->d_type == DT_REG){                               //Verifico el tipo del archivo
           if(i == n){
           strcpy(carta,file->d_name);                              //Copio el nombre del archivo en carta
-          printf("%s\n", carta);
-          chdir("Mazo");                                          //Voy a Mazo
-          remove(carta);                                          //Borro la carta del mazo
-          chdir("..");                                            //Vuelvo a Tarea1
+          //printf("%s\n", carta);
+
           break;
         }
           i++;
       }
     }
+      if (strcmp(Carpeta,"Mazo")==0){
+        chdir(Carpeta);                                          //Voy a Mazo
+        remove(carta);                                          //Borro la carta del mazo
+        chdir("..");                                            //Vuelvo a Tarea1
+      }
       closedir(directorio);
     }
     else{
@@ -109,25 +180,25 @@ char * ObtenerCarta(int n){ //READY
   }
 
 void Repartir(){ //READY
-  int pos, repartidas=0,i;
+  int pos,i;
   char* card;
   FILE *fp;
   srand(time(0));
-  for(i=0;i<8;i++){
+  for(i=0;i<7;i++){
     //Jugador1
-    printf("Jugador1 Obtuvo: ");
     pos=rand()%(110 - repartidas) + 1;
-    card=ObtenerCarta(pos);
+    card=ObtenerCarta(pos, "Mazo");
+    //printf("Jugador1 Obtuvo: %s\n", card);
     chdir("Jugador1");
-    fp=fopen(card,"w");
+    fp=fopen(card ,"w");
     fclose(fp);
     chdir("..");
     repartidas++;
 
     //Jugador2
-    printf("Jugador2 Obtuvo: ");
     pos=rand()%(110 - repartidas) + 1;
-    card=ObtenerCarta(pos);
+    card=ObtenerCarta(pos, "Mazo");
+    //printf("Jugador2 Obtuvo: %s\n", card);
     chdir("Jugador2");
     fp=fopen(card,"w");
     fclose(fp);
@@ -135,9 +206,10 @@ void Repartir(){ //READY
     repartidas++;
 
     //Jugador3
-    printf("Jugador3 Obtuvo: ");
+
     pos=rand()%(110 - repartidas) + 1;
-    card=ObtenerCarta(pos);
+    card=ObtenerCarta(pos, "Mazo");
+    //printf("Jugador3 Obtuvo: %s\n", card);
     chdir("Jugador3");
     fp=fopen(card,"w");
     fclose(fp);
@@ -145,9 +217,9 @@ void Repartir(){ //READY
     repartidas++;
 
     //Jugador4
-    printf("Jugador4 Obtuvo: ");
     pos=rand()%(110 - repartidas) + 1;
-    card=ObtenerCarta(pos);
+    card=ObtenerCarta(pos, "Mazo");
+    //printf("Jugador4 Obtuvo: %s\n", card);
     chdir("Jugador4");
     fp=fopen(card,"w");
     fclose(fp);
@@ -156,11 +228,118 @@ void Repartir(){ //READY
 
   }
 
+
+  pos=rand()%(110 - repartidas) + 1;
+  card=ObtenerCarta(pos, "Mazo");
+  //printf("La Carta en la Pila es: %s\n", card);
+  chdir("LastCard");
+  fp=fopen(card,"w");
+  fclose(fp);
+  chdir("..");
+  repartidas++;
+
 }
+
+void RobarCarta( char* Player, char* ultimaCard, int why){ //READY
+  int pos;
+  char* card;
+  FILE* fp;
+  pos=rand()%(110 - repartidas) + 1;
+  card=ObtenerCarta(pos, "Mazo");
+  printf("Has robado %s.\n", card);
+  if (why==0){
+    int flag=Jugable(card, ultimaCard);
+    if(flag==0){
+      printf("Has robado %s que es jugable.\n", card);
+      chdir("LastCard");
+      remove(ultimaCard);
+      fp=fopen(card,"w");
+      fclose(fp);
+      chdir("..");
+
+    }
+    else{
+      chdir(Player);
+      fp=fopen(card,"w");
+      fclose(fp);
+      chdir("..");
+    }
+  }
+  else{
+    printf("Has tenido que robar %s\n", card);
+    chdir(Player);
+    fp=fopen(card,"w");
+    fclose(fp);
+    chdir("..");
+  }
+}
+
+void JugarCarta( char* Player, char* card, char* ultimaCard){
+  FILE *fp;
+  chdir(Player);
+  remove(card);
+  chdir("..");
+  chdir("LastCard");
+  remove(ultimaCard);
+  fp=fopen(card, "w");
+  fclose(fp);
+  chdir("..");
+}
+
+void Turno(char* Jugador){ //READY
+  int i, jugables=0, decision=0, flag=0;
+  char *aux, *aux1, *aux2;
+  char lastcard[100], mano[100], lastmano[100];
+  aux=ObtenerCarta(0,"LastCard");
+  strcpy(lastcard,aux);
+  printf("LastCard es: %s\n", lastcard);
+  while (i<108){
+    aux1=ObtenerCarta(i,Jugador);
+    strcpy(mano,aux1);
+    if(strcmp(mano,lastmano)==0) break;
+    aux2=ObtenerCarta(i,Jugador);
+    strcpy(lastmano,aux2);
+    i++;
+    if (Jugable(mano, lastcard) == 0){
+       jugables++;
+    }
+    printf("%d. %s\n", i, mano);
+  }
+  if(jugables==0){
+    printf("No posees cartas jugables\n");
+    RobarCarta(Jugador, lastcard,0);
+    repartidas++;
+    aux=ObtenerCarta(0,"LastCard");
+    printf("El tope es: %s\n", aux);
+  }
+  else {
+    printf("Posees %d cartas jugables\n", jugables);
+    while(flag==0){
+      printf("Elija una carta: ");
+      scanf("%i", &decision);
+      aux1=ObtenerCarta(decision-1,Jugador);
+      if(Jugable(aux1,lastcard)==0){
+        printf("Carta valida\n");
+        flag=1;
+        JugarCarta(Jugador, aux1, lastcard);
+        aux=ObtenerCarta(0,"LastCard");
+        printf("El tope es: %s\n", aux);
+      }
+      else{
+        printf("Carta invalida elegir otra\n");
+      }
+    }
+  }
+}
+
+
 
 
 int main(){
   CrearCarpetas();
   CrearMazo("./Mazo");
   Repartir();
+  Turno("Jugador1");
+
+
 }
