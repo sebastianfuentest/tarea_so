@@ -29,7 +29,7 @@ int GetNumber (char* carta) { //READY
    if (strcmp(token, "Reversa")==0) return 11;
    if (strcmp(token, "Salto")==0) return 12;
    if (strcmp(token, "+4")==0) return 13;
-   if (strcmp(token, "CartaColor")==0) return 13;
+   if (strcmp(token, "CartaColor")==0) return 14;
    return 69;                                                        //Carta Invalida
 }
 
@@ -274,7 +274,7 @@ void RobarCarta( char* Player, char* ultimaCard, int why){ //READY
   }
 }
 
-void JugarCarta( char* Player, char* card, char* ultimaCard){
+void JugarCarta( char* Player, char* card, char* ultimaCard){//READY
   FILE *fp;
   chdir(Player);
   remove(card);
@@ -340,14 +340,135 @@ int Turno(char* Jugador){ //READY
 
 
 
+///FALTA ARREGLAR LOS +ALGO, ELEGIR COLOR EN LAS NEGRAS, SALTOS
 
 int main(){
-  int turn=1;
-  CrearCarpetas();
-  CrearMazo("./Mazo");
-  Repartir();
-  while(turn==1){
-    turn=Turno("Jugador1");
-}
+    CrearCarpetas();
+    CrearMazo("./Mazo");
+    Repartir();
+//-------------------------------------------------------------------//
+//-------------------------------------------------------------------//
+    int pid, pid2, pid3;
+    char buffer[100], *aux;
+    int p12[2], p21[2], p23[2], p32[2], p34[2], p43[2], p41[2], p14[2];
+    int WRITE=1, READ=0;
+    int turno=0, fin=1, reversa=0;
+    char *j1="Jugador1", *j2="Jugador2", *j3="Jugador3", *j4="Jugador4";
 
+    pipe(p12);
+    pipe(p21);
+    pipe(p23);
+    pipe(p32);
+    pipe(p34);
+    pipe(p43);
+    pipe(p41);
+    pipe(p14);
+
+    pid=fork();
+    while((repartidas<108)){
+      if(pid>0){
+        if (turno==0){       //TURNO JUGADOR 1
+          printf("\n Turno Jugador1\n");
+          fin=Turno(j1);
+          write(p12[WRITE],j2,100);
+        }
+        else{
+          read(p21[READ],buffer, 100);
+          printf("\n Turno %s\n", buffer);
+          fin=Turno(buffer);
+          aux=ObtenerCarta(0,"LastCard");
+          reversa=GetNumber(aux);
+          if(reversa!=11){
+            if(strcmp(buffer,j2)==0) write(p12[WRITE], j3, 100);
+            if(strcmp(buffer,j3)==0) write(p12[WRITE], j4, 100);
+            if(strcmp(buffer,j4)==0) write(p12[WRITE], j1, 100);
+          }
+          else{
+            if(strcmp(buffer,j2)==0) write(p12[WRITE], j1, 100);
+            if(strcmp(buffer,j3)==0) write(p12[WRITE], j2, 100);
+            if(strcmp(buffer,j4)==0) write(p12[WRITE], j3, 100);
+          }
+
+        }
+        wait(NULL);
+      }
+      else if(pid==0){  //TURNO JUGADOR 2
+        read(p12[READ],buffer,100);
+        printf("\n Turno %s\n", buffer);
+        fin=Turno(buffer);
+        aux=ObtenerCarta(0,"LastCard");
+        reversa=GetNumber(aux);
+        if(reversa!=11){
+          if(strcmp(buffer,j1)==0) write(p12[WRITE], j2, 100);
+          if(strcmp(buffer,j2)==0) write(p12[WRITE], j3, 100);
+          if(strcmp(buffer,j3)==0) write(p12[WRITE], j4, 100);
+          if(strcmp(buffer,j4)==0) write(p12[WRITE], j1, 100);
+        }
+        else{
+          if(strcmp(buffer,j1)==0) write(p12[WRITE], j4, 100);
+          if(strcmp(buffer,j2)==0) write(p12[WRITE], j1, 100);
+          if(strcmp(buffer,j3)==0) write(p12[WRITE], j2, 100);
+          if(strcmp(buffer,j4)==0) write(p12[WRITE], j3, 100);
+        }
+      }
+      else{
+        pid2=fork();
+        if(pid2==0){ //TURNO JUGADOR 3
+          read(p23[READ],buffer,100);
+          printf("\n Turno %s\n", buffer);
+          fin=Turno(buffer);
+          aux=ObtenerCarta(0,"LastCard");
+          reversa=GetNumber(aux);
+          if(reversa!=11){
+            if(strcmp(buffer,j1)==0) write(p34[WRITE], j2, 100);
+            if(strcmp(buffer,j2)==0) write(p34[WRITE], j3, 100);
+            if(strcmp(buffer,j3)==0) write(p34[WRITE], j4, 100);
+            if(strcmp(buffer,j4)==0) write(p34[WRITE], j1, 100);
+          }
+          else{
+            if(strcmp(buffer,j1)==0) write(p32[WRITE], j4, 100);
+            if(strcmp(buffer,j2)==0) write(p32[WRITE], j1, 100);
+            if(strcmp(buffer,j3)==0) write(p32[WRITE], j2, 100);
+            if(strcmp(buffer,j4)==0) write(p32[WRITE], j3, 100);
+          }
+        }
+        else{ //TURNO JUGADOR 4
+          pid3=fork();
+          read(p34[READ],buffer,100);
+          printf("\n Turno %s\n", buffer);
+          fin=Turno(buffer);
+          aux=ObtenerCarta(0,"LastCard");
+          reversa=GetNumber(aux);
+          if(reversa!=11){
+            if(strcmp(buffer,j1)==0) write(p41[WRITE], j2, 100);
+            if(strcmp(buffer,j2)==0) write(p41[WRITE], j3, 100);
+            if(strcmp(buffer,j3)==0) write(p41[WRITE], j4, 100);
+            if(strcmp(buffer,j4)==0) write(p41[WRITE], j1, 100);
+          }
+          else{
+            if(strcmp(buffer,j1)==0) write(p43[WRITE], j4, 100);
+            if(strcmp(buffer,j2)==0) write(p43[WRITE], j1, 100);
+            if(strcmp(buffer,j3)==0) write(p43[WRITE], j2, 100);
+            if(strcmp(buffer,j4)==0) write(p43[WRITE], j3, 100);
+          }
+        }
+      }
+  }
+
+    close(p12[WRITE]);
+    close(p12[READ]);
+    close(p21[WRITE]);
+    close(p21[READ]);
+    close(p23[WRITE]);
+    close(p23[READ]);
+    close(p32[WRITE]);
+    close(p32[READ]);
+    close(p34[WRITE]);
+    close(p34[READ]);
+    close(p43[WRITE]);
+    close(p43[READ]);
+    close(p41[WRITE]);
+    close(p41[READ]);
+    close(p14[WRITE]);
+    close(p14[READ]);
 }
